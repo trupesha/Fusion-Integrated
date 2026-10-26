@@ -1,15 +1,8 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './modules/home/components/Home';
-import ELMRoutes from './modules/elm/navigation';
+import React from "react";
+import { AppRoutes } from "./app/router";
 
-const App: React.FC = () => (
-    <Router>
-        <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/elm" element={<ELMRoutes />} />
-        </Routes>
-    </Router>
-);
+const App: React.FC = () => {
+  return <AppRoutes />;
+};
 
 export default App;
