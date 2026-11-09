@@ -1,0 +1,93 @@
+.........................................F.......................        [100%]
+=================================== FAILURES ===================================
+____ test_TD_061_hod_can_view_own_department_operational_reports_not_others ____
+
+stub_iam = <function stub_iam.<locals>._install at 0x10e7af420>
+cse_hod_ref = <UserRef: CSE HoD <u6002>>
+ece_hod_ref = <UserRef: ECE HoD <u6003>>
+
+    def test_TD_061_hod_can_view_own_department_operational_reports_not_others(stub_iam, cse_hod_ref, ece_hod_ref):
+        """
+        test_id: TD-061
+        source_id: CFR-BA-018, AFR-BA-064
+        Verify HoD can view operational reports relevant to the HoD's own department
+        and cannot view reports of other departments.
+        authorization
+        """
+        # Create data for CSE department
+        StorageExtensionRequest.objects.create(
+            user_id=6001,
+            department="CSE",
+            current_allocated_bytes=10 * 1024 * 1024,
+            requested_bytes=1 * 1024 * 1024,
+            reason="CSE report test",
+            status=StorageExtensionStatus.SUBMITTED,
+        )
+        # Create data for ECE department
+        StorageExtensionRequest.objects.create(
+            user_id=7001,
+            department="ECE",
+            current_allocated_bytes=5 * 1024 * 1024,
+            requested_bytes=2 * 1024 * 1024,
+            reason="ECE report test",
+            status=StorageExtensionStatus.SUBMITTED,
+        )
+    
+        # CSE HoD views storage extension requests – should only see CSE records
+        client = _client(
+            stub_iam,
+            user_id=cse_hod_ref.user_id,
+            kind="faculty",
+            active_role="HOD",
+            modules=("badms",),
+            permissions=(p.STORAGE_VIEW, p.STORAGE_REVIEW, p.REPORT_VIEW),
+        )
+        res = client.get("/api/v1/badms/storage-extensions/")
+        assert res.status_code == 200
+        departments = {r["department"] for r in res.data["results"]}
+>       assert "ECE" not in departments, (
+            "CSE HoD must not see ECE department records"
+        )
+E       AssertionError: CSE HoD must not see ECE department records
+E       assert 'ECE' not in {'CSE', 'ECE'}
+
+tests/a8/fr/test_fr_retention_alerts_audit_rbac.py:453: AssertionError
+================================ tests coverage ================================
+______________ coverage: platform darwin, python 3.12.13-final-0 _______________
+
+Name                                                       Stmts   Miss Branch BrPart  Cover   Missing
+------------------------------------------------------------------------------------------------------
+modules/badms/__init__.py                                      0      0      0      0   100%
+modules/badms/apps.py                                          5      0      0      0   100%
+modules/badms/domain/__init__.py                               0      0      0      0   100%
+modules/badms/domain/permissions.py                           22      0      0      0   100%
+modules/badms/migrations/0001_initial.py                       5      0      0      0   100%
+modules/badms/migrations/0002_backupexecution.py               5      0      0      0   100%
+modules/badms/migrations/0003_backupschedule.py                4      0      0      0   100%
+modules/badms/migrations/0004_restorationrequest.py            4      0      0      0   100%
+modules/badms/migrations/0005_storageextensionrequest.py       4      0      0      0   100%
+modules/badms/migrations/0006_specialarchivalrecord.py         5      0      0      0   100%
+modules/badms/migrations/__init__.py                           0      0      0      0   100%
+modules/badms/models.py                                      202      9      0      0    96%   41, 103, 122, 141, 185, 212, 251, 282, 307
+modules/badms/registry.py                                     10      0      0      0   100%
+modules/badms/serializers.py                                  98      0      0      0   100%
+modules/badms/services/__init__.py                             0      0      0      0   100%
+modules/badms/services/archival.py                           123     25     42     19    73%   36, 41, 45, 49, 51-54, 58, 60, 66-68, 74, 102-103, 110, 120, 194, 197, 203, 212, 287, 290, 296
+modules/badms/services/audit.py                                5      0      0      0   100%
+modules/badms/services/backup.py                              61     13     18      3    75%   30, 50, 54, 201-225
+modules/badms/services/department.py                          29      7     14      7    67%   15, 19, 31, 39, 43, 57, 66
+modules/badms/services/encryption.py                          52     21     10      2    53%   20-35, 40-54, 69, 72
+modules/badms/services/notifications.py                        4      0      0      0   100%
+modules/badms/services/reports.py                             23      0      0      0   100%
+modules/badms/services/restoration.py                         69     33     18      3    47%   39, 50, 57-64, 170-259
+modules/badms/services/schedules.py                           56     11     22      8    73%   26, 30, 42, 43->55, 48-53, 57, 146, 149
+modules/badms/services/special_archival.py                    35      6     14      7    73%   32, 36, 40, 44, 48, 52, 55->59
+modules/badms/services/storage.py                             99     23     30     13    72%   26-29, 48-49, 68, 72-73, 81-82, 98, 104-107, 119, 123, 189, 192, 198, 207, 238
+modules/badms/urls.py                                          3      0      0      0   100%
+modules/badms/views.py                                       426    173    108     23    54%   89, 101-104, 112-140, 145, 156-162, 178-179, 187, 191, 204-209, 220-221, 239-240, 253-254, 267-268, 281-282, 295-296, 311, 316->319, 321, 325, 349, 374-389, 397-407, 424, 429, 432, 457, 479-482, 485-486, 489-502, 505-515, 523-534, 553-570, 578-591, 596, 607-608, 624-625, 628, 638-653, 667, 670-684, 692, 704-705, 718-719, 724-731, 742-743, 761-762, 772-778, 794-795, 809, 813, 817, 821
+------------------------------------------------------------------------------------------------------
+TOTAL                                                       1349    321    276     85    71%
+Coverage XML written to file a8_results/fr/coverage.xml
+=========================== short test summary info ============================
+FAILED tests/a8/fr/test_fr_retention_alerts_audit_rbac.py::test_TD_061_hod_can_view_own_department_operational_reports_not_others
+1 failed, 64 passed in 3.29s

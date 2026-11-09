@@ -1,0 +1,128 @@
+...................F......................F................              [100%]
+=================================== FAILURES ===================================
+_______ test_TD_020_sensitive_data_without_aes256_encryption_prohibited ________
+
+stub_iam = <function stub_iam.<locals>._install at 0x10d799800>
+cse_user_ref = <UserRef: CSE User <u1001>>
+
+    def test_TD_020_sensitive_data_without_aes256_encryption_prohibited(stub_iam, cse_user_ref):
+        """
+        test_id: TD-020
+        source_id: BR-BA-007
+        Verify that archiving or transferring Sensitive data without AES-256 encryption is prohibited
+        test_type: security
+        """
+        archive = ArchivalRequest.objects.create(
+            user_id=cse_user_ref.user_id,
+            department="CSE",
+            file_name="sensitive_unencrypted.dat",
+            document_date=datetime.date(2026, 1, 1),
+            owners=["researcher"],
+            file_type="dat",
+            file_size_bytes=2048,
+            reason="Sensitive research",
+            status=ArchiveStatus.ROUTED_TO_SECURITY,
+            authoritative_classification=ArchiveClassification.SENSITIVE,
+            is_encrypted=False,
+        )
+        client = _client(
+            stub_iam,
+            user_id=70,
+            kind="staff",
+            active_role="it_security",
+            modules=("badms",),
+            permissions=(p.ARCHIVE_ENCRYPT, p.ARCHIVE_VIEW),
+        )
+        # Attempting non-AES-256 encryption mechanism
+        res = client.post(
+            f"/api/v1/badms/archives/{archive.pk}/configure-encryption/",
+            {"algorithm": "DES-EDE3-CBC", "key_id": "NON-AES-KEY"},
+            format="json",
+        )
+>       assert res.status_code == 400, (
+            f"BADMS must reject storage/configuration of Sensitive data without compliant AES-256 encryption. Got {res.status_code}"
+        )
+E       AssertionError: BADMS must reject storage/configuration of Sensitive data without compliant AES-256 encryption. Got 200
+E       assert 200 == 400
+E        +  where 200 = <Response status_code=200, "application/json">.status_code
+
+tests/a8/br/test_br_badms.py:940: AssertionError
+__________ test_TD_043_storage_extension_rejected_when_quota_not_full __________
+
+stub_iam = <function stub_iam.<locals>._install at 0x10dd8d4e0>
+cse_user_ref = <UserRef: CSE User <u1001>>
+
+    def test_TD_043_storage_extension_rejected_when_quota_not_full(stub_iam, cse_user_ref):
+        """
+        test_id: TD-043
+        source_id: BR-BA-016
+        Verify that a storage-extension request is rejected or flagged as invalid when the user's storage quota is not full
+        test_type: validation
+        """
+        UserStorageQuota.objects.create(
+            user_id=cse_user_ref.user_id,
+            department="CSE",
+            allocated_bytes=100 * 1024 * 1024,
+            used_bytes=10 * 1024 * 1024,  # Quota is only 10% used, NOT full
+        )
+        client = _client(
+            stub_iam,
+            user_id=cse_user_ref.user_id,
+            kind="student",
+            active_role="student",
+            modules=("badms",),
+            permissions=(p.STORAGE_CREATE, p.STORAGE_VIEW_SELF),
+        )
+        res = client.post(
+            "/api/v1/badms/storage-extensions/",
+            {"requested_bytes": 10 * 1024 * 1024, "reason": "Premature extension request"},
+            format="json",
+        )
+>       assert res.status_code in (400, 422), (
+            f"BADMS must flag or reject storage-extension when quota is not full. Got {res.status_code}: {res.data}"
+        )
+E       AssertionError: BADMS must flag or reject storage-extension when quota is not full. Got 201: {'id': 9, 'user_id': 1001, 'department': 'CSE', 'current_allocated_bytes': 104857600, 'requested_bytes': 10485760, 'reason': 'Premature extension request', 'status': 'submitted', 'hod_user_id': None, 'hod_comments': '', 'decided_at': None, 'created_at': '2026-11-09T11:44:29.917046+05:30', 'updated_at': '2026-11-09T11:44:29.917053+05:30'}
+E       assert 201 in (400, 422)
+E        +  where 201 = <Response status_code=201, "application/json">.status_code
+
+tests/a8/br/test_br_badms.py:1738: AssertionError
+================================ tests coverage ================================
+______________ coverage: platform darwin, python 3.12.13-final-0 _______________
+
+Name                                                       Stmts   Miss Branch BrPart  Cover   Missing
+------------------------------------------------------------------------------------------------------
+modules/badms/__init__.py                                      0      0      0      0   100%
+modules/badms/apps.py                                          5      0      0      0   100%
+modules/badms/domain/__init__.py                               0      0      0      0   100%
+modules/badms/domain/permissions.py                           22      0      0      0   100%
+modules/badms/migrations/0001_initial.py                       5      0      0      0   100%
+modules/badms/migrations/0002_backupexecution.py               5      0      0      0   100%
+modules/badms/migrations/0003_backupschedule.py                4      0      0      0   100%
+modules/badms/migrations/0004_restorationrequest.py            4      0      0      0   100%
+modules/badms/migrations/0005_storageextensionrequest.py       4      0      0      0   100%
+modules/badms/migrations/0006_specialarchivalrecord.py         5      0      0      0   100%
+modules/badms/migrations/__init__.py                           0      0      0      0   100%
+modules/badms/models.py                                      202      9      0      0    96%   41, 103, 122, 141, 185, 212, 251, 282, 307
+modules/badms/registry.py                                     10      0      0      0   100%
+modules/badms/serializers.py                                  98      0      0      0   100%
+modules/badms/services/__init__.py                             0      0      0      0   100%
+modules/badms/services/archival.py                           123     35     42     19    66%   36, 41, 45, 49, 51-54, 58, 60, 66-68, 74, 102-103, 110, 120, 194, 197, 203, 211-231, 287, 296, 308-349
+modules/badms/services/audit.py                                5      0      0      0   100%
+modules/badms/services/backup.py                              61     12     18      2    77%   50, 54, 201-225
+modules/badms/services/department.py                          29      7     14      7    67%   15, 19, 31, 39, 43, 57, 66
+modules/badms/services/encryption.py                          52     21     10      2    53%   20-35, 40-54, 69, 72
+modules/badms/services/notifications.py                        4      0      0      0   100%
+modules/badms/services/reports.py                             23      0      0      0   100%
+modules/badms/services/restoration.py                         69     11     18      5    77%   39, 50, 57-64, 174, 177
+modules/badms/services/schedules.py                           56      9     22      8    78%   30, 42, 43->55, 47, 51-53, 57, 146, 149
+modules/badms/services/special_archival.py                    35      6     14      7    73%   32, 36, 40, 44, 48, 52, 55->59
+modules/badms/services/storage.py                             99     26     30     10    69%   26-29, 48-49, 68, 72-73, 81-82, 97-107, 119, 123, 189, 192, 198, 207
+modules/badms/urls.py                                          3      0      0      0   100%
+modules/badms/views.py                                       426    144    108     29    62%   89, 101-104, 116-122, 127, 132-137, 145, 156-162, 178-179, 183, 187, 204-209, 220-221, 239-240, 253-254, 281-282, 295-296, 311, 316->319, 321, 325, 349, 374-389, 397-407, 418-435, 457, 481-482, 485-486, 496, 499->498, 505-515, 529, 558, 567-568, 578-591, 596, 607-608, 621-630, 650-651, 664-670, 675, 680-684, 692, 704-705, 718-719, 727, 729, 742-743, 761-762, 772-778, 794-795, 809, 813, 817, 821
+------------------------------------------------------------------------------------------------------
+TOTAL                                                       1349    280    276     89    74%
+Coverage XML written to file a8_results/br/coverage.xml
+=========================== short test summary info ============================
+FAILED tests/a8/br/test_br_badms.py::test_TD_020_sensitive_data_without_aes256_encryption_prohibited
+FAILED tests/a8/br/test_br_badms.py::test_TD_043_storage_extension_rejected_when_quota_not_full
+2 failed, 57 passed in 2.99s

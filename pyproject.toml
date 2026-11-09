@@ -87,4 +87,4 @@ ignore = [
 DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["test_*.py"]
 addopts = "-q --no-header --ds=config.settings.test"
-testpaths = ["modules", "core", "fusion_auth"]
+testpaths = ["modules", "core", "fusion_auth", "tests"]

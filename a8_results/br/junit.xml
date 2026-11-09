@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="59" time="2.993" timestamp="2026-11-09T11:44:27.511988+05:30" hostname="Trupeshas-MacBook-Air.local"><testcase classname="tests.a8.br.test_br_badms" name="test_TD_001_sysadmin_can_trigger_manual_backup" time="1.762" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_002_super_admin_can_trigger_manual_backup" time="0.009" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_003_unauthorized_actor_denied_manual_backup_trigger" time="0.006" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_004_submitted_archival_request_routed_to_respective_hod" time="0.029" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_005_respective_hod_authorized_to_decide_archival_request" time="0.012" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_006_different_department_hod_prohibited_from_deciding_archival" time="0.008" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_007_non_hod_prohibited_from_deciding_archival_request" time="0.006" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_008_it_security_can_configure_encryption_for_sensitive_data" time="0.010" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_009_non_it_security_prohibited_from_configuring_encryption" time="0.006" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_010_sysadmin_can_assign_authoritative_classification" time="0.010" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_011_non_sysadmin_prohibited_from_authoritative_classification" time="0.006" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_012_authoritative_classification_prohibited_prior_to_hod_approval" time="0.008" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_013_sensitive_restoration_blocked_until_sysadmin_approval" time="0.017" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_014_sensitive_restoration_proceeds_after_sysadmin_approval" time="0.012" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_015_sensitive_restoration_rejected_by_sysadmin_blocked" time="0.009" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_016_non_sensitive_restoration_standard_path_no_approval_required" time="0.008" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_017_explicit_initial_classification_used_on_upload" time="0.013" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_018_omitted_initial_classification_defaults_to_routine" time="0.012" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_019_sensitive_data_encrypted_with_aes256_at_rest_and_in_transit" time="0.011" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_020_sensitive_data_without_aes256_encryption_prohibited" time="0.011"><failure message="AssertionError: BADMS must reject storage/configuration of Sensitive data without compliant AES-256 encryption. Got 200&#10;assert 200 == 400&#10; +  where 200 = &lt;Response status_code=200, &quot;application/json&quot;&gt;.status_code">stub_iam = &lt;function stub_iam.&lt;locals&gt;._install at 0x10d799800&gt;
+cse_user_ref = &lt;UserRef: CSE User &lt;u1001&gt;&gt;
+
+    def test_TD_020_sensitive_data_without_aes256_encryption_prohibited(stub_iam, cse_user_ref):
+        """
+        test_id: TD-020
+        source_id: BR-BA-007
+        Verify that archiving or transferring Sensitive data without AES-256 encryption is prohibited
+        test_type: security
+        """
+        archive = ArchivalRequest.objects.create(
+            user_id=cse_user_ref.user_id,
+            department="CSE",
+            file_name="sensitive_unencrypted.dat",
+            document_date=datetime.date(2026, 1, 1),
+            owners=["researcher"],
+            file_type="dat",
+            file_size_bytes=2048,
+            reason="Sensitive research",
+            status=ArchiveStatus.ROUTED_TO_SECURITY,
+            authoritative_classification=ArchiveClassification.SENSITIVE,
+            is_encrypted=False,
+        )
+        client = _client(
+            stub_iam,
+            user_id=70,
+            kind="staff",
+            active_role="it_security",
+            modules=("badms",),
+            permissions=(p.ARCHIVE_ENCRYPT, p.ARCHIVE_VIEW),
+        )
+        # Attempting non-AES-256 encryption mechanism
+        res = client.post(
+            f"/api/v1/badms/archives/{archive.pk}/configure-encryption/",
+            {"algorithm": "DES-EDE3-CBC", "key_id": "NON-AES-KEY"},
+            format="json",
+        )
+&gt;       assert res.status_code == 400, (
+            f"BADMS must reject storage/configuration of Sensitive data without compliant AES-256 encryption. Got {res.status_code}"
+        )
+E       AssertionError: BADMS must reject storage/configuration of Sensitive data without compliant AES-256 encryption. Got 200
+E       assert 200 == 400
+E        +  where 200 = &lt;Response status_code=200, "application/json"&gt;.status_code
+
+tests/a8/br/test_br_badms.py:940: AssertionError</failure></testcase><testcase classname="tests.a8.br.test_br_badms" name="test_TD_021_retention_policy_rules_applied_based_on_classification" time="0.013" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_022_distinct_authoritative_classifications_receive_distinct_retention_treatments" time="0.026" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_023_submitted_storage_extension_routed_for_hod_approval" time="0.012" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_024_generic_admin_or_non_hod_prohibited_from_approving_storage_extension" time="0.008" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_025_storage_extension_not_granted_without_explicit_hod_approval" time="0.005" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_026_hod_permitted_to_act_within_own_department" time="0.033" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_027_hod_prohibited_from_deciding_archival_of_different_department" time="0.008" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_028_hod_prohibited_from_deciding_storage_extension_of_different_department" time="0.008" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_029_hod_prohibited_from_viewing_other_department_reports" time="0.011" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_030_local_backup_schedule_overrides_global_schedule" time="0.008" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_031_global_schedule_applies_when_no_local_schedule_exists" time="0.007" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_032_valid_backup_schedule_validated_and_applied" time="0.007" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_033_invalid_backup_schedule_rejected_and_existing_preserved" time="0.006" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_034_conflicting_backup_schedule_rejected_and_existing_preserved" time="0.006" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_035_scheduled_backup_executes_successfully_when_repository_reachable" time="0.008" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_036_scheduled_backup_fails_when_repository_unreachable" time="0.009" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_037_backup_failure_sends_alert_to_sysadmin_within_five_minutes" time="0.006" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_038_failure_alert_not_triggered_on_successful_backup" time="0.005" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_039_consecutive_backup_failures_under_three_do_not_escalate_to_director" time="0.008" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_040_three_consecutive_backup_failures_escalate_to_director_of_it" time="0.010" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_041_successful_backup_resets_consecutive_failure_counter" time="0.012" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_042_storage_extension_validated_and_accepted_when_quota_full" time="0.009" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_043_storage_extension_rejected_when_quota_not_full" time="0.009"><failure message="AssertionError: BADMS must flag or reject storage-extension when quota is not full. Got 201: {'id': 9, 'user_id': 1001, 'department': 'CSE', 'current_allocated_bytes': 104857600, 'requested_bytes': 10485760, 'reason': 'Premature extension request', 'status': 'submitted', 'hod_user_id': None, 'hod_comments': '', 'decided_at': None, 'created_at': '2026-11-09T11:44:29.917046+05:30', 'updated_at': '2026-11-09T11:44:29.917053+05:30'}&#10;assert 201 in (400, 422)&#10; +  where 201 = &lt;Response status_code=201, &quot;application/json&quot;&gt;.status_code">stub_iam = &lt;function stub_iam.&lt;locals&gt;._install at 0x10dd8d4e0&gt;
+cse_user_ref = &lt;UserRef: CSE User &lt;u1001&gt;&gt;
+
+    def test_TD_043_storage_extension_rejected_when_quota_not_full(stub_iam, cse_user_ref):
+        """
+        test_id: TD-043
+        source_id: BR-BA-016
+        Verify that a storage-extension request is rejected or flagged as invalid when the user's storage quota is not full
+        test_type: validation
+        """
+        UserStorageQuota.objects.create(
+            user_id=cse_user_ref.user_id,
+            department="CSE",
+            allocated_bytes=100 * 1024 * 1024,
+            used_bytes=10 * 1024 * 1024,  # Quota is only 10% used, NOT full
+        )
+        client = _client(
+            stub_iam,
+            user_id=cse_user_ref.user_id,
+            kind="student",
+            active_role="student",
+            modules=("badms",),
+            permissions=(p.STORAGE_CREATE, p.STORAGE_VIEW_SELF),
+        )
+        res = client.post(
+            "/api/v1/badms/storage-extensions/",
+            {"requested_bytes": 10 * 1024 * 1024, "reason": "Premature extension request"},
+            format="json",
+        )
+&gt;       assert res.status_code in (400, 422), (
+            f"BADMS must flag or reject storage-extension when quota is not full. Got {res.status_code}: {res.data}"
+        )
+E       AssertionError: BADMS must flag or reject storage-extension when quota is not full. Got 201: {'id': 9, 'user_id': 1001, 'department': 'CSE', 'current_allocated_bytes': 104857600, 'requested_bytes': 10485760, 'reason': 'Premature extension request', 'status': 'submitted', 'hod_user_id': None, 'hod_comments': '', 'decided_at': None, 'created_at': '2026-11-09T11:44:29.917046+05:30', 'updated_at': '2026-11-09T11:44:29.917053+05:30'}
+E       assert 201 in (400, 422)
+E        +  where 201 = &lt;Response status_code=201, "application/json"&gt;.status_code
+
+tests/a8/br/test_br_badms.py:1738: AssertionError</failure></testcase><testcase classname="tests.a8.br.test_br_badms" name="test_TD_044_hod_reviews_criteria_and_approves_storage_extension" time="0.013" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_045_hod_reviews_criteria_and_rejects_storage_extension" time="0.011" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_046_badms_provides_decision_criteria_to_hod_during_extension_review" time="0.006" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_047_super_admin_can_perform_special_archival_operation" time="0.007" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_048_non_super_admin_prohibited_from_special_archival" time="0.004" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_049_offline_requesting_authority_cannot_directly_execute_special_archival" time="0.005" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_050_super_admin_has_authority_for_global_backup_schedules" time="0.007" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_051_sysadmin_prohibited_from_global_backup_schedules" time="0.004" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_052_it_security_prohibited_from_global_backup_schedules" time="0.003" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_053_authorized_actor_can_view_protected_info_within_scope" time="0.020" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_054_hod_prohibited_from_viewing_records_outside_department" time="0.007" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_055_user_prohibited_from_viewing_other_user_request_status" time="0.006" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_056_unauthorized_actor_denied_access_to_audit_logs" time="0.005" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_057_it_security_can_manage_rbac_and_enforce_security_policies" time="0.011" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_058_non_it_security_prohibited_from_managing_rbac_permissions" time="0.005" /><testcase classname="tests.a8.br.test_br_badms" name="test_TD_059_non_it_security_prohibited_from_modifying_security_policies" time="0.070" /></testsuite></testsuites>

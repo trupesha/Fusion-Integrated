@@ -1,0 +1,533 @@
+[
+  {
+    "test_id": "TD-001",
+    "source_id": "BR-BA-001",
+    "purpose": "Verify that an authorized SysAdmin can trigger a manual backup",
+    "preconditions": "Actor is authenticated with the SysAdmin role; BADMS is operational",
+    "action_or_input": "SysAdmin submits a manual backup trigger request",
+    "expected_result": "BADMS allows the trigger and initiates manual backup execution",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-002",
+    "source_id": "BR-BA-001",
+    "purpose": "Verify that an authorized Super Admin can trigger a manual backup",
+    "preconditions": "Actor is authenticated with the Super Admin role; BADMS is operational",
+    "action_or_input": "Super Admin submits a manual backup trigger request",
+    "expected_result": "BADMS allows the trigger and initiates manual backup execution",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-003",
+    "source_id": "BR-BA-001",
+    "purpose": "Verify that an unauthorized actor without SysAdmin or Super Admin authority is denied from triggering a manual backup",
+    "preconditions": "Actor is authenticated with a role other than SysAdmin or Super Admin (e.g., standard User, HoD, or IT Security)",
+    "action_or_input": "Unauthorized actor attempts to trigger a manual backup",
+    "expected_result": "BADMS denies the manual backup trigger and does not execute the backup",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-004",
+    "source_id": "BR-BA-002",
+    "purpose": "Verify that a submitted secure archival request is routed to the HoD of the requester's department",
+    "preconditions": "User belonging to Department A has submitted a valid secure archival request in Submitted status",
+    "action_or_input": "BADMS processes the submitted secure archival request for decision routing",
+    "expected_result": "BADMS routes the secure archival request exclusively to the HoD of Department A",
+    "test_type": "routing"
+  },
+  {
+    "test_id": "TD-005",
+    "source_id": "BR-BA-002",
+    "purpose": "Verify that the HoD of the requester's department is authorized to decide on the secure archival request",
+    "preconditions": "HoD of Department A is authenticated; a secure archival request from a Department A user is in Submitted status",
+    "action_or_input": "Department A HoD submits an approval or rejection decision on the request",
+    "expected_result": "BADMS authorizes and records the decision by the respective HoD",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-006",
+    "source_id": "BR-BA-002",
+    "purpose": "Verify that a HoD of a different department is prohibited from deciding the secure archival request",
+    "preconditions": "HoD of Department B is authenticated; a secure archival request from a Department A user is in Submitted status",
+    "action_or_input": "Department B HoD attempts to approve or reject the Department A archival request",
+    "expected_result": "BADMS denies the decision action because the request does not belong to the HoD's department",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-007",
+    "source_id": "BR-BA-002",
+    "purpose": "Verify that a non-HoD actor is prohibited from deciding a secure archival request",
+    "preconditions": "Actor without HoD role is authenticated; a secure archival request is in Submitted status",
+    "action_or_input": "Non-HoD actor attempts to decide on the secure archival request",
+    "expected_result": "BADMS denies the decision action",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-008",
+    "source_id": "BR-BA-003",
+    "purpose": "Verify that an authorized IT Security Team member can configure encryption for Sensitive data",
+    "preconditions": "Actor is authenticated with the IT Security role; a secure archival request with authoritative classification Sensitive is routed for encryption configuration",
+    "action_or_input": "IT Security Team member submits encryption configuration for the Sensitive data",
+    "expected_result": "BADMS allows the encryption configuration by the IT Security member and proceeds with archive creation",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-009",
+    "source_id": "BR-BA-003",
+    "purpose": "Verify that a non-IT Security actor is prohibited from configuring encryption for Sensitive data",
+    "preconditions": "Actor is authenticated with a role other than IT Security (e.g., SysAdmin or HoD); Sensitive data is routed for encryption",
+    "action_or_input": "Non-IT Security actor attempts to configure encryption for the Sensitive data",
+    "expected_result": "BADMS denies the encryption configuration request",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-010",
+    "source_id": "BR-BA-004",
+    "purpose": "Verify that an authorized SysAdmin can assign an authoritative classification (Critical, Sensitive, Routine, or Archival) to an HoD-approved secure archival request",
+    "preconditions": "SysAdmin is authenticated; secure archival request has received HoD approval and is pending authoritative classification",
+    "action_or_input": "SysAdmin selects and submits an authoritative classification (e.g., Critical, Sensitive, Routine, or Archival)",
+    "expected_result": "BADMS permits the classification assignment and records the authoritative classification on the request",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-011",
+    "source_id": "BR-BA-004",
+    "purpose": "Verify that a non-SysAdmin actor is prohibited from assigning the authoritative secure-archival classification",
+    "preconditions": "Actor is authenticated with a role other than SysAdmin (e.g., HoD, User, or IT Security); secure archival request has HoD approval",
+    "action_or_input": "Non-SysAdmin actor attempts to assign the authoritative classification",
+    "expected_result": "BADMS denies the authoritative classification assignment",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-012",
+    "source_id": "BR-BA-004",
+    "purpose": "Verify that authoritative classification assignment is prohibited prior to HoD approval",
+    "preconditions": "SysAdmin is authenticated; secure archival request is in Submitted status and has not yet received HoD approval",
+    "action_or_input": "SysAdmin attempts to assign authoritative classification before HoD approval has occurred",
+    "expected_result": "BADMS denies the action because authoritative classification can only be assigned after HoD approval",
+    "test_type": "negative"
+  },
+  {
+    "test_id": "TD-013",
+    "source_id": "BR-BA-005",
+    "purpose": "Verify that restoration of data classified Sensitive is blocked until SysAdmin approval is recorded",
+    "preconditions": "A restoration request for archived data classified Sensitive is submitted and pending SysAdmin approval",
+    "action_or_input": "Technical restoration execution is attempted while SysAdmin approval is pending",
+    "expected_result": "BADMS blocks the restoration execution until SysAdmin approval is explicitly recorded",
+    "test_type": "security"
+  },
+  {
+    "test_id": "TD-014",
+    "source_id": "BR-BA-005",
+    "purpose": "Verify that restoration of Sensitive data is permitted to proceed once SysAdmin approval is recorded",
+    "preconditions": "SysAdmin is authenticated; a restoration request for Sensitive data has received SysAdmin approval",
+    "action_or_input": "Restoration execution proceeds following SysAdmin approval",
+    "expected_result": "BADMS permits technical restoration of the Sensitive data to proceed",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-015",
+    "source_id": "BR-BA-005",
+    "purpose": "Verify that if SysAdmin rejects a Sensitive data restoration request, restoration is blocked and marked Rejected",
+    "preconditions": "SysAdmin is authenticated; a restoration request for Sensitive data is pending approval",
+    "action_or_input": "SysAdmin rejects the Sensitive restoration request",
+    "expected_result": "BADMS records the request as Rejected and prevents restoration from proceeding",
+    "test_type": "negative"
+  },
+  {
+    "test_id": "TD-016",
+    "source_id": "BR-BA-005",
+    "purpose": "Verify that restoration of non-Sensitive data (Routine, Critical, Archival) follows the standard restoration path without requiring SysAdmin approval",
+    "preconditions": "User has submitted a restoration request for archived data classified non-Sensitive (e.g., Routine)",
+    "action_or_input": "BADMS processes the restoration request for the non-Sensitive data",
+    "expected_result": "BADMS routes the request through standard restoration without requiring a SysAdmin approval step",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-017",
+    "source_id": "BR-BA-006",
+    "purpose": "Verify that when a user provides an explicit initial classification during secure archival upload, BADMS uses the provided classification",
+    "preconditions": "User is authenticated and submits a secure archival upload",
+    "action_or_input": "User submits upload data specifying an initial classification (e.g., Sensitive or Critical)",
+    "expected_result": "BADMS accepts the request and sets the initial classification to the user-provided value",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-018",
+    "source_id": "BR-BA-006",
+    "purpose": "Verify that when a user omits the initial classification during secure archival upload, BADMS automatically assigns Routine as the default",
+    "preconditions": "User is authenticated and submits a secure archival upload with the classification field omitted or empty",
+    "action_or_input": "User submits upload data without specifying an initial classification",
+    "expected_result": "BADMS assigns Routine as the default initial classification",
+    "test_type": "default"
+  },
+  {
+    "test_id": "TD-019",
+    "source_id": "BR-BA-007",
+    "purpose": "Verify that data authoritatively classified Sensitive is encrypted using AES-256 both at rest and in transit",
+    "preconditions": "Data has been authoritatively classified Sensitive; IT Security encryption configuration is initiated",
+    "action_or_input": "BADMS creates the archive and stores/transfers the Sensitive data",
+    "expected_result": "BADMS applies AES-256 encryption at rest in storage and enforces AES-256 encryption in transit during data transfer",
+    "test_type": "security"
+  },
+  {
+    "test_id": "TD-020",
+    "source_id": "BR-BA-007",
+    "purpose": "Verify that archiving or transferring Sensitive data without AES-256 encryption is prohibited",
+    "preconditions": "Data is classified Sensitive; encryption mechanism attempted is unencrypted or non-AES-256",
+    "action_or_input": "BADMS evaluates encryption compliance before storing or transferring Sensitive data",
+    "expected_result": "BADMS rejects storage or transmission without compliant AES-256 encryption",
+    "test_type": "security"
+  },
+  {
+    "test_id": "TD-021",
+    "source_id": "BR-BA-008",
+    "purpose": "Verify that BADMS selects and applies institute retention policy rules based on the authoritative classification assigned to data",
+    "preconditions": "Data has received an authoritative classification (e.g., Sensitive, Critical, Routine, or Archival)",
+    "action_or_input": "BADMS evaluates data for retention policy assignment following classification",
+    "expected_result": "BADMS associates the institute-defined retention rules corresponding to the assigned classification",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-022",
+    "source_id": "BR-BA-008",
+    "purpose": "Verify that distinct authoritative classifications receive their respective institute-defined retention treatments",
+    "preconditions": "Two datasets exist with different authoritative classifications (e.g., one Critical and one Routine)",
+    "action_or_input": "BADMS assigns retention policies to both datasets based on their respective classifications",
+    "expected_result": "BADMS applies the Critical retention rules to the Critical dataset and the Routine retention rules to the Routine dataset without conflation",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-023",
+    "source_id": "BR-BA-009",
+    "purpose": "Verify that a submitted storage-extension request is routed for HoD approval",
+    "preconditions": "A valid storage-extension request has been submitted by a user",
+    "action_or_input": "BADMS processes the submitted storage-extension request",
+    "expected_result": "BADMS routes the storage-extension request for HoD review and decision",
+    "test_type": "routing"
+  },
+  {
+    "test_id": "TD-024",
+    "source_id": "BR-BA-009",
+    "purpose": "Verify that a storage-extension request cannot be approved by a generic Admin or non-HoD actor",
+    "preconditions": "A valid storage-extension request is submitted and pending approval; actor has a generic Admin or other non-HoD role",
+    "action_or_input": "Generic Admin or non-HoD actor attempts to approve the storage-extension request",
+    "expected_result": "BADMS denies the approval action; approval by a generic Admin is prohibited",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-025",
+    "source_id": "BR-BA-009",
+    "purpose": "Verify that storage extension is not granted without explicit HoD approval",
+    "preconditions": "A storage-extension request is pending HoD decision",
+    "action_or_input": "System or user attempts to apply storage extension before HoD approval is granted",
+    "expected_result": "BADMS prevents quota extension from taking effect without recorded HoD approval",
+    "test_type": "negative"
+  },
+  {
+    "test_id": "TD-026",
+    "source_id": "BR-BA-010",
+    "purpose": "Verify that a HoD is permitted to act on archival requests, storage-extension requests, and reports belonging to the HoD's own department",
+    "preconditions": "HoD of Department A is authenticated; requests and reports belong to Department A",
+    "action_or_input": "HoD of Department A accesses reports and performs decisions on Department A archival and extension requests",
+    "expected_result": "BADMS allows the HoD to access the reports and decide on the requests within their own department",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-027",
+    "source_id": "BR-BA-010",
+    "purpose": "Verify that a HoD is prohibited from deciding on a secure archival request belonging to a different department",
+    "preconditions": "HoD of Department A is authenticated; secure archival request belongs to a user from Department B",
+    "action_or_input": "Department A HoD attempts to approve or reject the Department B archival request",
+    "expected_result": "BADMS denies the action due to departmental scope violation",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-028",
+    "source_id": "BR-BA-010",
+    "purpose": "Verify that a HoD is prohibited from deciding on a storage-extension request belonging to a different department",
+    "preconditions": "HoD of Department A is authenticated; storage-extension request belongs to a user from Department B",
+    "action_or_input": "Department A HoD attempts to approve or reject the Department B storage-extension request",
+    "expected_result": "BADMS denies the action due to departmental scope violation",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-029",
+    "source_id": "BR-BA-010",
+    "purpose": "Verify that a HoD is prohibited from viewing operational or departmental reports belonging to a different department",
+    "preconditions": "HoD of Department A is authenticated",
+    "action_or_input": "Department A HoD attempts to access departmental reports for Department B",
+    "expected_result": "BADMS denies access to Department B reports and preserves department isolation",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-030",
+    "source_id": "BR-BA-011",
+    "purpose": "Verify that a valid local backup schedule configured for a dataset overrides the institution-wide global backup schedule",
+    "preconditions": "A valid local backup schedule exists for Dataset X; an institution-wide global backup schedule also exists",
+    "action_or_input": "BADMS resolves the applicable backup schedule for Dataset X",
+    "expected_result": "BADMS executes the backup according to the local schedule, overriding the global schedule",
+    "test_type": "precedence"
+  },
+  {
+    "test_id": "TD-031",
+    "source_id": "BR-BA-011",
+    "purpose": "Verify that where no local backup schedule exists for a dataset, the institution-wide global backup schedule applies",
+    "preconditions": "No local backup schedule exists for Dataset Y; an institution-wide global backup schedule is configured",
+    "action_or_input": "BADMS resolves the applicable backup schedule for Dataset Y",
+    "expected_result": "BADMS applies and executes the global backup schedule for Dataset Y",
+    "test_type": "precedence"
+  },
+  {
+    "test_id": "TD-032",
+    "source_id": "BR-BA-012",
+    "purpose": "Verify that a new or modified backup schedule with valid parameters and no conflicts is successfully validated and applied",
+    "preconditions": "Authorized administrator is authenticated; valid parameters (frequency, time, classification filters) with no schedule conflicts are provided",
+    "action_or_input": "Administrator saves the valid backup schedule",
+    "expected_result": "BADMS passes parameter and conflict validation, applies the schedule, and logs the configuration change",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-033",
+    "source_id": "BR-BA-012",
+    "purpose": "Verify that a backup schedule configuration with invalid parameters is rejected and the existing effective schedule is preserved",
+    "preconditions": "Authorized administrator is authenticated; an existing effective backup schedule is in place",
+    "action_or_input": "Administrator attempts to save a backup schedule containing invalid parameters (e.g., malformed frequency or time)",
+    "expected_result": "BADMS rejects the schedule with validation errors and preserves the existing effective schedule unchanged",
+    "test_type": "validation"
+  },
+  {
+    "test_id": "TD-034",
+    "source_id": "BR-BA-012",
+    "purpose": "Verify that a backup schedule configuration with schedule conflicts is rejected and the existing effective schedule is preserved",
+    "preconditions": "Authorized administrator is authenticated; an existing effective backup schedule is in place; new schedule parameters conflict with existing schedules or constraints",
+    "action_or_input": "Administrator attempts to save a backup schedule with conflicting parameters",
+    "expected_result": "BADMS detects the conflict, rejects the schedule change, and preserves the existing effective schedule",
+    "test_type": "validation"
+  },
+  {
+    "test_id": "TD-035",
+    "source_id": "BR-BA-013",
+    "purpose": "Verify that a scheduled automatic backup proceeds and executes successfully when the scheduled repository is reachable",
+    "preconditions": "A scheduled backup is due; the scheduled repository is online and reachable",
+    "action_or_input": "BADMS triggers scheduled backup execution at the due time",
+    "expected_result": "BADMS verifies repository reachability, transfers eligible datasets to recovery storage, and records success",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-036",
+    "source_id": "BR-BA-013",
+    "purpose": "Verify that a scheduled automatic backup does not proceed and applies failure handling when the scheduled repository is unreachable",
+    "preconditions": "A scheduled backup is due; the scheduled repository is offline or unreachable",
+    "action_or_input": "BADMS attempts scheduled backup execution at the due time",
+    "expected_result": "BADMS does not execute the backup, records backup status as Failed, and initiates failure handling",
+    "test_type": "negative"
+  },
+  {
+    "test_id": "TD-037",
+    "source_id": "BR-BA-014",
+    "purpose": "Verify that when a backup fails, BADMS sends an alert to the SysAdmin within the five-minute SLA window",
+    "preconditions": "A manual or scheduled automatic backup execution fails, transitioning backup status to Failed",
+    "action_or_input": "BADMS processes the backup failure event",
+    "expected_result": "BADMS dispatches a backup-failure alert to the SysAdmin within five minutes of failure",
+    "test_type": "time_boundary"
+  },
+  {
+    "test_id": "TD-038",
+    "source_id": "BR-BA-014",
+    "purpose": "Verify that the five-minute failure alert is not triggered when a backup completes successfully",
+    "preconditions": "A backup completes successfully with status Success",
+    "action_or_input": "BADMS records the successful backup completion",
+    "expected_result": "BADMS does not trigger or send a backup failure alert",
+    "test_type": "boundary"
+  },
+  {
+    "test_id": "TD-039",
+    "source_id": "BR-BA-015",
+    "purpose": "Verify that when one or two consecutive backup failures occur, escalation to the Director of IT is not triggered",
+    "preconditions": "BADMS has recorded one or two consecutive backup failures (count < 3)",
+    "action_or_input": "BADMS processes the 1st or 2nd consecutive failure",
+    "expected_result": "BADMS alerts the SysAdmin per SLA, but does not send an escalation notification to the Director of IT",
+    "test_type": "boundary"
+  },
+  {
+    "test_id": "TD-040",
+    "source_id": "BR-BA-015",
+    "purpose": "Verify that when three consecutive backup failures occur, BADMS escalates the condition to the Director of IT",
+    "preconditions": "Two consecutive backup failures have occurred; a third consecutive backup execution fails",
+    "action_or_input": "BADMS records the third consecutive backup failure (consecutive failure count reaches 3)",
+    "expected_result": "BADMS sends an escalation notification to the Director of IT",
+    "test_type": "threshold"
+  },
+  {
+    "test_id": "TD-041",
+    "source_id": "BR-BA-015",
+    "purpose": "Verify that a successful backup resets the consecutive failure counter so subsequent failures do not prematurely escalate to the Director of IT",
+    "preconditions": "Two consecutive backup failures occurred, followed by a successful backup execution",
+    "action_or_input": "A new backup failure occurs after the successful backup (consecutive failure count becomes 1)",
+    "expected_result": "BADMS records the failure and alerts SysAdmin, but does not escalate to the Director of IT because the counter was reset",
+    "test_type": "boundary"
+  },
+  {
+    "test_id": "TD-042",
+    "source_id": "BR-BA-016",
+    "purpose": "Verify that a storage-extension request is validated and accepted when the user's storage quota is full",
+    "preconditions": "Authenticated user's current storage usage meets or exceeds the allocated quota (quota is full)",
+    "action_or_input": "User submits a storage-extension request",
+    "expected_result": "BADMS validates the usage condition, accepts the request, and routes it to the HoD",
+    "test_type": "validation"
+  },
+  {
+    "test_id": "TD-043",
+    "source_id": "BR-BA-016",
+    "purpose": "Verify that a storage-extension request is rejected or flagged as invalid when the user's storage quota is not full",
+    "preconditions": "Authenticated user's current storage usage is below the allocated quota (quota is not full)",
+    "action_or_input": "User submits a storage-extension request",
+    "expected_result": "BADMS flags or rejects the request due to unmet usage conditions (quota not full) and does not submit it to HoD",
+    "test_type": "validation"
+  },
+  {
+    "test_id": "TD-044",
+    "source_id": "BR-BA-017",
+    "purpose": "Verify that the HoD reviews available storage infrastructure, departmental policies, and user justification to approve a storage-extension request",
+    "preconditions": "A valid storage-extension request is pending HoD review; available infrastructure, departmental policy, and justification are presented to the HoD",
+    "action_or_input": "HoD reviews the stated criteria and submits an Approved decision",
+    "expected_result": "BADMS records the Approved decision based on the reviewed criteria and notifies the requester",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-045",
+    "source_id": "BR-BA-017",
+    "purpose": "Verify that the HoD reviews available storage infrastructure, departmental policies, and user justification to reject a storage-extension request",
+    "preconditions": "A valid storage-extension request is pending HoD review; available infrastructure, departmental policy, and justification are presented to the HoD",
+    "action_or_input": "HoD reviews the stated criteria (e.g., infrastructure shortfall or policy non-compliance) and submits a Rejected decision",
+    "expected_result": "BADMS records the Rejected decision and notifies the requester",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-046",
+    "source_id": "BR-BA-017",
+    "purpose": "Verify that BADMS provides the required decision criteria (available storage infrastructure, departmental policies, and user justification) to the HoD during extension review",
+    "preconditions": "A valid storage-extension request is in Submitted status pending HoD decision",
+    "action_or_input": "HoD opens the storage-extension request review interface",
+    "expected_result": "BADMS displays the user's justification, current usage and available infrastructure information, and departmental policy context",
+    "test_type": "decision"
+  },
+  {
+    "test_id": "TD-047",
+    "source_id": "BR-BA-018",
+    "purpose": "Verify that only the Super Admin can perform a special archival operation in BADMS following an offline request from an authority",
+    "preconditions": "Super Admin is authenticated; a special archival request has been received offline from an authority",
+    "action_or_input": "Super Admin initiates and executes the special archival operation within BADMS",
+    "expected_result": "BADMS permits the special archival operation to the Super Admin, records the outcome, and requires no online HoD approval",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-048",
+    "source_id": "BR-BA-018",
+    "purpose": "Verify that a non-Super Admin actor is prohibited from performing the special archival operation in BADMS",
+    "preconditions": "Actor is authenticated with a role other than Super Admin (e.g., SysAdmin, HoD, or standard User); an offline special archival request exists",
+    "action_or_input": "Non-Super Admin actor attempts to perform the special archival operation in BADMS",
+    "expected_result": "BADMS denies the operation; only Super Admin holds authority for this operation in BADMS",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-049",
+    "source_id": "BR-BA-018",
+    "purpose": "Verify that an offline requesting authority cannot directly execute the special archival operation in BADMS",
+    "preconditions": "An external or offline authority originates a special archival request offline",
+    "action_or_input": "Offline authority attempts direct execution of the special archival operation within BADMS without Super Admin mediation",
+    "expected_result": "BADMS prohibits direct execution by the offline authority; only Super Admin can execute the operation in BADMS",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-050",
+    "source_id": "BR-BA-019",
+    "purpose": "Verify that only the Super Admin has authority to define and modify institution-wide global backup schedules and default backup policies",
+    "preconditions": "Super Admin is authenticated with highest authority for global backup configuration",
+    "action_or_input": "Super Admin defines or modifies an institution-wide global backup schedule and default backup policy",
+    "expected_result": "BADMS validates, accepts, and applies the global backup schedule and default backup policy",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-051",
+    "source_id": "BR-BA-019",
+    "purpose": "Verify that a SysAdmin is prohibited from defining or modifying institution-wide global backup schedules and default backup policies",
+    "preconditions": "SysAdmin is authenticated (authorized only for local/dataset schedules)",
+    "action_or_input": "SysAdmin attempts to define or modify institution-wide global backup schedules or default backup policies",
+    "expected_result": "BADMS denies the global backup configuration action",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-052",
+    "source_id": "BR-BA-019",
+    "purpose": "Verify that IT Security is prohibited from defining or modifying institution-wide global backup schedules and default backup policies",
+    "preconditions": "IT Security member is authenticated (authorized for security/encryption/RBAC policies, not global backup schedules)",
+    "action_or_input": "IT Security member attempts to define or modify institution-wide global backup schedules or default backup policies",
+    "expected_result": "BADMS denies the global backup configuration action",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-053",
+    "source_id": "BR-BA-020",
+    "purpose": "Verify that an authorized actor can view protected information (audit logs, request status, backup status, reports) matching their authorized scope",
+    "preconditions": "Actor is authenticated and holds authorization for the requested information scope (e.g., SysAdmin for audit/activity history; User for own requests)",
+    "action_or_input": "Actor requests access to protected information within their authorized scope",
+    "expected_result": "BADMS authorizes and displays the protected information",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-054",
+    "source_id": "BR-BA-020",
+    "purpose": "Verify that a HoD is prohibited from accessing protected reports or request status outside the HoD's own department",
+    "preconditions": "HoD of Department A is authenticated",
+    "action_or_input": "Department A HoD attempts to view protected reports or request status belonging to Department B",
+    "expected_result": "BADMS denies access and does not display information outside the HoD's department scope",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-055",
+    "source_id": "BR-BA-020",
+    "purpose": "Verify that a user is prohibited from viewing request status or history belonging to another user",
+    "preconditions": "User A is authenticated; a request was submitted by User B",
+    "action_or_input": "User A attempts to access or track the status of User B's request",
+    "expected_result": "BADMS denies access and does not disclose User B's request status",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-056",
+    "source_id": "BR-BA-020",
+    "purpose": "Verify that an unauthorized actor is denied access to system audit logs",
+    "preconditions": "Actor without audit log review authorization (e.g., standard User or HoD) is authenticated",
+    "action_or_input": "Unauthorized actor attempts to view system audit logs",
+    "expected_result": "BADMS denies access to the audit logs",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-057",
+    "source_id": "BR-BA-021",
+    "purpose": "Verify that an authorized IT Security Team member can manage RBAC permissions and configure/enforce security policies",
+    "preconditions": "Actor is authenticated with the IT Security role",
+    "action_or_input": "IT Security Team member submits changes to RBAC permissions or security policies",
+    "expected_result": "BADMS validates and applies the RBAC permission updates and enforces the security policies",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-058",
+    "source_id": "BR-BA-021",
+    "purpose": "Verify that a non-IT Security actor (e.g., SysAdmin, Super Admin, HoD, or User) is prohibited from managing RBAC permissions",
+    "preconditions": "Actor is authenticated with a role other than IT Security (e.g., SysAdmin or Super Admin)",
+    "action_or_input": "Non-IT Security actor attempts to modify RBAC permissions",
+    "expected_result": "BADMS denies the RBAC management action",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-059",
+    "source_id": "BR-BA-021",
+    "purpose": "Verify that a non-IT Security actor is prohibited from configuring or modifying security policies assigned to IT Security",
+    "preconditions": "Actor is authenticated with a role other than IT Security",
+    "action_or_input": "Non-IT Security actor attempts to configure or modify IT security policies",
+    "expected_result": "BADMS denies the security policy configuration action",
+    "test_type": "authorization"
+  }
+]

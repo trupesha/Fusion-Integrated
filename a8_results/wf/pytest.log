@@ -1,0 +1,38 @@
+.....................................................                    [100%]
+================================ tests coverage ================================
+______________ coverage: platform darwin, python 3.12.13-final-0 _______________
+
+Name                                                       Stmts   Miss Branch BrPart  Cover   Missing
+------------------------------------------------------------------------------------------------------
+modules/badms/__init__.py                                      0      0      0      0   100%
+modules/badms/apps.py                                          5      0      0      0   100%
+modules/badms/domain/__init__.py                               0      0      0      0   100%
+modules/badms/domain/permissions.py                           22      0      0      0   100%
+modules/badms/migrations/0001_initial.py                       5      0      0      0   100%
+modules/badms/migrations/0002_backupexecution.py               5      0      0      0   100%
+modules/badms/migrations/0003_backupschedule.py                4      0      0      0   100%
+modules/badms/migrations/0004_restorationrequest.py            4      0      0      0   100%
+modules/badms/migrations/0005_storageextensionrequest.py       4      0      0      0   100%
+modules/badms/migrations/0006_specialarchivalrecord.py         5      0      0      0   100%
+modules/badms/migrations/__init__.py                           0      0      0      0   100%
+modules/badms/models.py                                      202      9      0      0    96%   41, 103, 122, 141, 185, 212, 251, 282, 307
+modules/badms/registry.py                                     10     10      0      0     0%   3-158
+modules/badms/serializers.py                                  98      0      0      0   100%
+modules/badms/services/__init__.py                             0      0      0      0   100%
+modules/badms/services/archival.py                           123     23     42     17    76%   36, 41, 45, 49, 51-54, 58, 60, 66-68, 74, 102-103, 110, 120, 194, 203, 212, 287, 296
+modules/badms/services/audit.py                                5      0      0      0   100%
+modules/badms/services/backup.py                              61     45     18      0    20%   25-30, 46-151, 156-184, 201-225
+modules/badms/services/department.py                          29      7     14      7    67%   15, 19, 31, 39, 43, 57, 66
+modules/badms/services/encryption.py                          52     20     10      1    56%   20-35, 40-54, 69
+modules/badms/services/notifications.py                        4      0      0      0   100%
+modules/badms/services/reports.py                             23     19      0      0    17%   20-65
+modules/badms/services/restoration.py                         69      9     18      3    82%   39, 50, 57-64
+modules/badms/services/schedules.py                           56     41     22      0    19%   24-59, 78-94, 105-133, 144-151
+modules/badms/services/special_archival.py                    35     26     14      0    18%   30-106
+modules/badms/services/storage.py                             99     19     30     12    76%   26-29, 48-49, 68, 72-73, 81-82, 98, 102, 119, 123, 189, 198, 207, 238
+modules/badms/urls.py                                          3      0      0      0   100%
+modules/badms/views.py                                       426    251    108      3    34%   89, 101-104, 112-140, 145, 156-162, 176-191, 194-196, 204-209, 220-221, 253-254, 281-282, 306-328, 331-366, 374-389, 397-407, 418-435, 438-471, 479-482, 485-486, 489-502, 505-515, 523-534, 553-570, 578-591, 596, 607-608, 621-630, 661-687, 692, 704-705, 715-731, 742-743, 772-778, 781-797, 805-825, 833-834
+------------------------------------------------------------------------------------------------------
+TOTAL                                                       1349    479    276     43    58%
+Coverage XML written to file a8_results/wf/coverage.xml
+53 passed in 3.63s

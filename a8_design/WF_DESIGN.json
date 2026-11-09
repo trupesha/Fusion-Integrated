@@ -1,0 +1,479 @@
+[
+  {
+    "test_id": "TD-001",
+    "source_id": "BW-BA-01",
+    "purpose": "Verify complete basis workflow BW-BA-01 execution where a user submits a secure archival request and the respective HoD rejects it",
+    "preconditions": "User is authenticated; respective HoD for the user's department is authenticated; BADMS is operational",
+    "action_or_input": "User submits a valid secure archival request with required metadata; respective HoD evaluates the request and selects Reject with justification",
+    "expected_result": "Request transitions from Not Submitted to Submitted upon submission, and then from Submitted to Rejected upon HoD decision; requester receives rejection notification",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-002",
+    "source_id": "BW-BA-01",
+    "purpose": "Verify that valid submission of a secure archival request transitions state from Not Submitted to Submitted and routes to the requester's HoD (Transition 1)",
+    "preconditions": "User is authenticated; storage quota is sufficient; valid archival metadata provided",
+    "action_or_input": "User submits the secure archival request",
+    "expected_result": "BADMS validates request data and quota, creates request in Submitted state, and routes it to the requester's HoD",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-003",
+    "source_id": "BW-BA-01",
+    "purpose": "Verify that the respective HoD's rejection decision transitions the request from Submitted to Rejected (Transition 2)",
+    "preconditions": "A secure archival request exists in Submitted state under the HoD's department",
+    "action_or_input": "Respective HoD records a Reject decision for the request",
+    "expected_result": "Request status transitions to Rejected; decision is recorded in audit logs and requester is notified; workflow terminates",
+    "test_type": "decision"
+  },
+  {
+    "test_id": "TD-004",
+    "source_id": "BW-BA-01",
+    "purpose": "Verify department-scope enforcement where an HoD from a different department cannot reject the request",
+    "preconditions": "A secure archival request in Submitted state belongs to Department A; HoD from Department B is authenticated",
+    "action_or_input": "HoD from Department B attempts to reject the request belonging to Department A",
+    "expected_result": "BADMS rejects the action due to departmental boundary; request remains in Submitted state",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-005",
+    "source_id": "BW-BA-01",
+    "purpose": "Verify that HoD rejection cannot be performed on a request that is not in Submitted state",
+    "preconditions": "Archival request is in Not Submitted or already in Rejected state",
+    "action_or_input": "HoD attempts to record a rejection on the request",
+    "expected_result": "BADMS denies the transition; request status remains unchanged",
+    "test_type": "negative"
+  },
+  {
+    "test_id": "TD-006",
+    "source_id": "BW-BA-02",
+    "purpose": "Verify complete basis workflow BW-BA-02 execution where user submits, HoD approves, and SysAdmin assigns a non-Sensitive authoritative classification",
+    "preconditions": "Authenticated accounts for User, respective HoD, and SysAdmin exist; BADMS is operational",
+    "action_or_input": "User submits archival request; respective HoD approves request; SysAdmin assigns authoritative classification Routine",
+    "expected_result": "Request transitions Not Submitted -> Submitted -> HoD Approved -> Classified Non-Sensitive / Policy Applied; retention policy is applied and workflow terminates",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-007",
+    "source_id": "BW-BA-02",
+    "purpose": "Verify that respective HoD approval transitions request from Submitted to HoD Approved and routes it to SysAdmin (Transition 2)",
+    "preconditions": "Secure archival request exists in Submitted state under the HoD's department",
+    "action_or_input": "Respective HoD records an Approve decision",
+    "expected_result": "Request transitions to HoD Approved and is routed to SysAdmin for authoritative classification",
+    "test_type": "decision"
+  },
+  {
+    "test_id": "TD-008",
+    "source_id": "BW-BA-02",
+    "purpose": "Verify that SysAdmin assigning a non-Sensitive classification (Routine, Archival, or Critical) transitions request to Classified Non-Sensitive / Policy Applied (Transition 3)",
+    "preconditions": "Request is in HoD Approved state; SysAdmin is authenticated",
+    "action_or_input": "SysAdmin selects authoritative classification Archival (Classification != Sensitive)",
+    "expected_result": "Request status transitions to Classified Non-Sensitive / Policy Applied; institute retention rules apply without routing to IT Security",
+    "test_type": "decision"
+  },
+  {
+    "test_id": "TD-009",
+    "source_id": "BW-BA-02",
+    "purpose": "Verify that a non-SysAdmin actor cannot assign authoritative classification to an approved archival request",
+    "preconditions": "Request is in HoD Approved state; User or HoD is authenticated",
+    "action_or_input": "User or HoD attempts to execute BA-UC-004 to classify data",
+    "expected_result": "BADMS denies the operation with authorization error; request status remains HoD Approved",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-010",
+    "source_id": "BW-BA-02",
+    "purpose": "Verify that SysAdmin classification cannot be performed prior to HoD approval",
+    "preconditions": "Request is in Submitted state awaiting HoD decision",
+    "action_or_input": "SysAdmin attempts to assign authoritative classification to the request",
+    "expected_result": "BADMS denies the classification transition; request remains in Submitted state",
+    "test_type": "negative"
+  },
+  {
+    "test_id": "TD-011",
+    "source_id": "BW-BA-03",
+    "purpose": "Verify complete basis workflow BW-BA-03 execution through submission, HoD approval, SysAdmin Sensitive classification, and IT Security AES-256 encryption",
+    "preconditions": "Authenticated accounts exist for User, respective HoD, SysAdmin, and IT Security Team",
+    "action_or_input": "User submits request; HoD approves; SysAdmin assigns authoritative classification Sensitive; IT Security Team configures encryption and creates archive",
+    "expected_result": "Request transitions Not Submitted -> Submitted -> HoD Approved -> Classified Sensitive / Routed to IT Security -> Sensitive Archive Encrypted; archive is encrypted with AES-256 at rest and in transit",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-012",
+    "source_id": "BW-BA-03",
+    "purpose": "Verify that SysAdmin assigning authoritative classification Sensitive transitions request to Classified Sensitive / Routed to IT Security (Transition 3)",
+    "preconditions": "Request is in HoD Approved state; SysAdmin is authenticated",
+    "action_or_input": "SysAdmin assigns authoritative classification Sensitive",
+    "expected_result": "Request status transitions to Classified Sensitive / Routed to IT Security and is routed to IT Security Team",
+    "test_type": "routing"
+  },
+  {
+    "test_id": "TD-013",
+    "source_id": "BW-BA-03",
+    "purpose": "Verify that successful encryption configuration by IT Security Team transitions request to Sensitive Archive Encrypted (Transition 4)",
+    "preconditions": "Request is in Classified Sensitive / Routed to IT Security state; IT Security Team is authenticated",
+    "action_or_input": "IT Security Team configures encryption parameters and BADMS creates the encrypted archive",
+    "expected_result": "BADMS creates AES-256 encrypted archive; request status transitions to Sensitive Archive Encrypted",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-014",
+    "source_id": "BW-BA-03",
+    "purpose": "Verify that a non-IT Security actor cannot configure encryption on sensitive archival requests",
+    "preconditions": "Request is in Classified Sensitive / Routed to IT Security state; SysAdmin or regular User is authenticated",
+    "action_or_input": "SysAdmin or User attempts to execute BA-UC-005 to configure encryption",
+    "expected_result": "BADMS denies authorization; request status remains Classified Sensitive / Routed to IT Security",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-015",
+    "source_id": "BW-BA-03",
+    "purpose": "Verify that encryption configuration cannot be triggered for requests not classified as Sensitive",
+    "preconditions": "Request is in Classified Non-Sensitive / Policy Applied state",
+    "action_or_input": "IT Security Team attempts to execute BA-UC-005 on the non-sensitive request",
+    "expected_result": "BADMS rejects the action; request status remains unchanged",
+    "test_type": "negative"
+  },
+  {
+    "test_id": "TD-016",
+    "source_id": "CW-BA-01",
+    "purpose": "Verify composite workflow CW-BA-01 decision branching at HoD review between Reject and Approve paths",
+    "preconditions": "Two valid secure archival requests exist in Submitted state under the HoD's department",
+    "action_or_input": "HoD decides request 1 with Reject and request 2 with Approve",
+    "expected_result": "Request 1 transitions to Rejected; request 2 transitions to HoD Approved and routes to SysAdmin",
+    "test_type": "decision"
+  },
+  {
+    "test_id": "TD-017",
+    "source_id": "CW-BA-01",
+    "purpose": "Verify composite workflow CW-BA-01 decision branching at SysAdmin classification between Non-Sensitive and Sensitive paths",
+    "preconditions": "Two requests exist in HoD Approved state; SysAdmin is authenticated",
+    "action_or_input": "SysAdmin classifies request 1 as Routine (Classification != Sensitive) and request 2 as Sensitive (Classification = Sensitive)",
+    "expected_result": "Request 1 transitions to Classified Non-Sensitive / Policy Applied; request 2 transitions to Classified Sensitive / Routed to IT Security and routes to IT Security Team",
+    "test_type": "decision"
+  },
+  {
+    "test_id": "TD-018",
+    "source_id": "CW-BA-01",
+    "purpose": "Verify CW-BA-01 end-to-end composite execution along the approved Sensitive path through all four participating roles",
+    "preconditions": "User, respective HoD, SysAdmin, and IT Security Team accounts exist",
+    "action_or_input": "Step-by-step execution: User submits request -> HoD approves -> SysAdmin classifies as Sensitive -> IT Security configures encryption",
+    "expected_result": "Request traverses Not Submitted -> Submitted -> HoD Approved -> Classified Sensitive / Routed to IT Security -> Sensitive Archive Encrypted",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-019",
+    "source_id": "CW-BA-01",
+    "purpose": "Verify CW-BA-01 end-to-end composite execution along the approved Non-Sensitive path through User, HoD, and SysAdmin",
+    "preconditions": "User, respective HoD, and SysAdmin accounts exist",
+    "action_or_input": "Step-by-step execution: User submits request -> HoD approves -> SysAdmin classifies as Routine",
+    "expected_result": "Request traverses Not Submitted -> Submitted -> HoD Approved -> Classified Non-Sensitive / Policy Applied",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-020",
+    "source_id": "CW-BA-01",
+    "purpose": "Verify CW-BA-01 end-to-end composite execution along the Rejection path through User and HoD",
+    "preconditions": "User and respective HoD accounts exist",
+    "action_or_input": "Step-by-step execution: User submits request -> HoD rejects request",
+    "expected_result": "Request traverses Not Submitted -> Submitted -> Rejected; no subsequent classification or encryption is triggered",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-021",
+    "source_id": "CW-BA-01",
+    "purpose": "Verify notification dispatch at each milestone transition in composite workflow CW-BA-01",
+    "preconditions": "Active secure archival request progressing through CW-BA-01",
+    "action_or_input": "User submits request, HoD decides, SysAdmin classifies, and IT Security encrypts archive",
+    "expected_result": "BADMS dispatches submission notifications upon submission, and decision/completion notifications at HoD decision and archival completion",
+    "test_type": "routing"
+  },
+  {
+    "test_id": "TD-022",
+    "source_id": "BW-BA-04",
+    "purpose": "Verify complete basis workflow BW-BA-04 execution where user submits storage extension and respective HoD rejects it",
+    "preconditions": "User quota is full; valid justification and metadata provided; respective HoD is authenticated",
+    "action_or_input": "User submits storage-extension request; respective HoD reviews details and rejects the request",
+    "expected_result": "Request transitions Not Submitted -> Submitted -> Rejected; requester is notified of rejection; workflow terminates",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-023",
+    "source_id": "BW-BA-04",
+    "purpose": "Verify that valid storage-extension submission transitions request from Not Submitted to Submitted and routes to respective HoD (Transition 1)",
+    "preconditions": "User is authenticated and current storage quota is reached",
+    "action_or_input": "User submits storage extension request with justification and requested amount",
+    "expected_result": "BADMS validates usage and infrastructure info, sets status Submitted, and routes to requester's HoD",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-024",
+    "source_id": "BW-BA-04",
+    "purpose": "Verify that respective HoD rejection transitions Submitted storage-extension request to Rejected (Transition 2)",
+    "preconditions": "Storage-extension request is in Submitted state under HoD's department",
+    "action_or_input": "Respective HoD records a Reject decision on the storage-extension request",
+    "expected_result": "Request status transitions to Rejected; decision is recorded and requester receives rejection notification",
+    "test_type": "decision"
+  },
+  {
+    "test_id": "TD-025",
+    "source_id": "BW-BA-04",
+    "purpose": "Verify department-scope enforcement where an HoD from a different department cannot reject storage extension request",
+    "preconditions": "Storage-extension request in Submitted state belongs to Department A; HoD of Department B is authenticated",
+    "action_or_input": "HoD of Department B attempts to reject the storage-extension request",
+    "expected_result": "BADMS denies the decision action; status remains Submitted under Department A",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-026",
+    "source_id": "BW-BA-04",
+    "purpose": "Verify that storage-extension rejection cannot be performed on requests not in Submitted state",
+    "preconditions": "Storage-extension request is in Not Submitted or already in Rejected state",
+    "action_or_input": "HoD attempts to record a rejection on the request",
+    "expected_result": "BADMS denies the operation; no state change occurs",
+    "test_type": "negative"
+  },
+  {
+    "test_id": "TD-027",
+    "source_id": "BW-BA-05",
+    "purpose": "Verify complete basis workflow BW-BA-05 execution where user submits storage extension and respective HoD approves it",
+    "preconditions": "User quota is full; valid justification provided; available infrastructure checked; respective HoD is authenticated",
+    "action_or_input": "User submits storage extension request; respective HoD reviews details, attachments, infrastructure, and approves request",
+    "expected_result": "Request transitions Not Submitted -> Submitted -> Approved; approval decision is recorded; requester is notified; workflow terminates with no post-approval processing",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-028",
+    "source_id": "BW-BA-05",
+    "purpose": "Verify that respective HoD approval transitions storage-extension request from Submitted to Approved (Transition 2)",
+    "preconditions": "Storage-extension request is in Submitted state under HoD's department",
+    "action_or_input": "Respective HoD records an Approve decision",
+    "expected_result": "Request status transitions from Submitted to Approved; requester receives approval notification",
+    "test_type": "decision"
+  },
+  {
+    "test_id": "TD-029",
+    "source_id": "BW-BA-05",
+    "purpose": "Verify that HoD can approve storage extension when requested storage does not exceed available infrastructure",
+    "preconditions": "Request in Submitted state has requested storage within available infrastructure capacity",
+    "action_or_input": "HoD reviews available infrastructure info and approves the request",
+    "expected_result": "BADMS records the approval and transitions status to Approved",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-030",
+    "source_id": "BW-BA-05",
+    "purpose": "Verify that a non-HoD actor cannot approve a storage-extension request",
+    "preconditions": "Storage-extension request is in Submitted state; regular User or SysAdmin is authenticated",
+    "action_or_input": "Non-HoD actor attempts to execute BA-UC-008 to approve the request",
+    "expected_result": "BADMS denies authorization; request status remains Submitted",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-031",
+    "source_id": "BW-BA-05",
+    "purpose": "Verify that approval cannot be executed on storage-extension requests not in Submitted state",
+    "preconditions": "Storage-extension request is already in Approved state",
+    "action_or_input": "HoD attempts to approve the request again",
+    "expected_result": "BADMS denies the operation; state remains Approved",
+    "test_type": "negative"
+  },
+  {
+    "test_id": "TD-032",
+    "source_id": "CW-BA-02",
+    "purpose": "Verify composite workflow CW-BA-02 decision branching at HoD review between Approve and Reject paths",
+    "preconditions": "Two storage-extension requests exist in Submitted state under the HoD's department",
+    "action_or_input": "Respective HoD decides request 1 with Approve and request 2 with Reject",
+    "expected_result": "Request 1 transitions to Approved; request 2 transitions to Rejected; notifications dispatched for both outcomes",
+    "test_type": "decision"
+  },
+  {
+    "test_id": "TD-033",
+    "source_id": "CW-BA-02",
+    "purpose": "Verify CW-BA-02 end-to-end composite execution along the Approved path (BW-BA-05 trajectory)",
+    "preconditions": "Authenticated User with full quota and respective HoD exist",
+    "action_or_input": "User submits request; HoD approves request",
+    "expected_result": "Request transitions through Not Submitted -> Submitted -> Approved, ending in recorded Approved state",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-034",
+    "source_id": "CW-BA-02",
+    "purpose": "Verify CW-BA-02 end-to-end composite execution along the Rejected path (BW-BA-04 trajectory)",
+    "preconditions": "Authenticated User with full quota and respective HoD exist",
+    "action_or_input": "User submits request; HoD rejects request",
+    "expected_result": "Request transitions through Not Submitted -> Submitted -> Rejected, ending in recorded Rejected state",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-035",
+    "source_id": "CW-BA-02",
+    "purpose": "Verify storage-extension submission and decision notifications across CW-BA-02",
+    "preconditions": "Active storage-extension requests in CW-BA-02",
+    "action_or_input": "Trigger submission by User, followed by approval or rejection by HoD",
+    "expected_result": "Submission notification sent upon submission; decision notification sent to User upon completion of either branch",
+    "test_type": "routing"
+  },
+  {
+    "test_id": "TD-036",
+    "source_id": "BW-BA-06",
+    "purpose": "Verify complete basis workflow BW-BA-06 execution where user requests restoration of non-Sensitive data and SysAdmin executes technical restoration without approval",
+    "preconditions": "Archived dataset has non-Sensitive classification (Routine); User and SysAdmin are authenticated",
+    "action_or_input": "User requests restoration of the Routine archive; SysAdmin executes data restoration after standard checks",
+    "expected_result": "Request transitions Not Requested -> Restoration Requested / Standard Path -> Restored; data is restored without requiring an approval step",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-037",
+    "source_id": "BW-BA-06",
+    "purpose": "Verify that requesting restoration of archived data with Classification != Sensitive transitions directly to Restoration Requested / Standard Path (Transition 1)",
+    "preconditions": "User is authenticated; archive has classification Archival or Critical (Classification != Sensitive)",
+    "action_or_input": "User submits restoration request for non-Sensitive archive",
+    "expected_result": "Request status is set to Restoration Requested / Standard Path (bypassing approval queue); routed directly to SysAdmin execution queue",
+    "test_type": "decision"
+  },
+  {
+    "test_id": "TD-038",
+    "source_id": "BW-BA-06",
+    "purpose": "Verify that SysAdmin execution of BA-UC-018 on standard-path restoration transitions state to Restored (Transition 2)",
+    "preconditions": "Restoration request is in Restoration Requested / Standard Path state; SysAdmin is authenticated",
+    "action_or_input": "SysAdmin verifies standard checks and executes technical restoration",
+    "expected_result": "Restoration succeeds; request status transitions to Restored; timestamp and status are logged",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-039",
+    "source_id": "BW-BA-06",
+    "purpose": "Verify that a non-SysAdmin actor cannot execute technical data restoration under BA-UC-018",
+    "preconditions": "Restoration request is in Restoration Requested / Standard Path state; regular User is authenticated",
+    "action_or_input": "User attempts to trigger technical restoration execution",
+    "expected_result": "BADMS denies execution; request remains in Restoration Requested / Standard Path state",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-040",
+    "source_id": "BW-BA-06",
+    "purpose": "Verify that technical restoration execution cannot occur if request is not in Restoration Requested / Standard Path state",
+    "preconditions": "Restoration request is in Not Requested state",
+    "action_or_input": "SysAdmin attempts to execute technical restoration on unrequested dataset",
+    "expected_result": "BADMS rejects the action; no restoration occurs",
+    "test_type": "negative"
+  },
+  {
+    "test_id": "TD-041",
+    "source_id": "BW-BA-07",
+    "purpose": "Verify complete basis workflow BW-BA-07 execution along approval and restoration path where user requests Sensitive restoration, SysAdmin approves, and SysAdmin executes technical restoration",
+    "preconditions": "Archived dataset is classified as Sensitive; User and SysAdmin accounts exist",
+    "action_or_input": "User requests restoration of Sensitive data; SysAdmin reviews and approves request; SysAdmin executes technical restoration",
+    "expected_result": "Request transitions Not Requested -> Sensitive Restoration Pending Approval -> Approved for Restoration -> Restored; data is successfully decrypted and restored",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-042",
+    "source_id": "BW-BA-07",
+    "purpose": "Verify basis workflow BW-BA-07 rejection outcome where SysAdmin rejects Sensitive data restoration request (Transition 2)",
+    "preconditions": "Sensitive restoration request exists in Sensitive Restoration Pending Approval state",
+    "action_or_input": "SysAdmin reviews and records Reject decision on the request",
+    "expected_result": "Request status transitions from Sensitive Restoration Pending Approval to Rejected; workflow terminates",
+    "test_type": "decision"
+  },
+  {
+    "test_id": "TD-043",
+    "source_id": "BW-BA-07",
+    "purpose": "Verify that restoration request for data classified as Sensitive transitions to Sensitive Restoration Pending Approval and routes to SysAdmin (Transition 1)",
+    "preconditions": "User is authenticated; archive classification is Sensitive",
+    "action_or_input": "User requests restoration of the Sensitive archive",
+    "expected_result": "Request status is set to Sensitive Restoration Pending Approval; request is routed for SysAdmin approval",
+    "test_type": "routing"
+  },
+  {
+    "test_id": "TD-044",
+    "source_id": "BW-BA-07",
+    "purpose": "Verify that SysAdmin approval transitions request from Sensitive Restoration Pending Approval to Approved for Restoration (Transition 3)",
+    "preconditions": "Request is in Sensitive Restoration Pending Approval state; SysAdmin is authenticated",
+    "action_or_input": "SysAdmin approves the Sensitive restoration request",
+    "expected_result": "Request status transitions to Approved for Restoration; request becomes eligible for technical execution",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-045",
+    "source_id": "BW-BA-07",
+    "purpose": "Verify that technical execution by SysAdmin on an approved Sensitive restoration transitions state to Restored (Transition 4)",
+    "preconditions": "Request is in Approved for Restoration state; SysAdmin is authenticated",
+    "action_or_input": "SysAdmin executes technical restoration under BA-UC-018",
+    "expected_result": "Restoration execution succeeds; request status transitions to Restored",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-046",
+    "source_id": "BW-BA-07",
+    "purpose": "Verify enforcement of BR-BA-005 where technical restoration execution is blocked while request is in Sensitive Restoration Pending Approval state",
+    "preconditions": "Request is in Sensitive Restoration Pending Approval state",
+    "action_or_input": "SysAdmin attempts to execute technical restoration (BA-UC-018) before approval is recorded",
+    "expected_result": "BADMS blocks execution; request remains in Sensitive Restoration Pending Approval state",
+    "test_type": "negative"
+  },
+  {
+    "test_id": "TD-047",
+    "source_id": "BW-BA-07",
+    "purpose": "Verify that only SysAdmin can approve Sensitive data restoration under BA-UC-017 and non-SysAdmin roles cannot approve",
+    "preconditions": "Request is in Sensitive Restoration Pending Approval state; HoD or regular User is authenticated",
+    "action_or_input": "HoD or regular User attempts to execute BA-UC-017 to approve restoration",
+    "expected_result": "BADMS denies authorization; request remains in Sensitive Restoration Pending Approval state",
+    "test_type": "authorization"
+  },
+  {
+    "test_id": "TD-048",
+    "source_id": "CW-BA-03",
+    "purpose": "Verify composite workflow CW-BA-03 routing decision based on archive classification at the restoration request stage",
+    "preconditions": "Two restoration requests are initiated: one for Routine data, one for Sensitive data",
+    "action_or_input": "User requests restoration for the Routine archive and the Sensitive archive",
+    "expected_result": "Routine archive transitions to Restoration Requested / Standard Path; Sensitive archive transitions to Sensitive Restoration Pending Approval",
+    "test_type": "decision"
+  },
+  {
+    "test_id": "TD-049",
+    "source_id": "CW-BA-03",
+    "purpose": "Verify CW-BA-03 decision branch at Sensitive Restoration Pending Approval state where SysAdmin can either Approve or Reject",
+    "preconditions": "Two Sensitive restoration requests exist in Sensitive Restoration Pending Approval state; SysAdmin is authenticated",
+    "action_or_input": "SysAdmin approves request 1 and rejects request 2",
+    "expected_result": "Request 1 transitions to Approved for Restoration; request 2 transitions to Rejected",
+    "test_type": "decision"
+  },
+  {
+    "test_id": "TD-050",
+    "source_id": "CW-BA-03",
+    "purpose": "Verify CW-BA-03 end-to-end composite execution along the standard non-Sensitive path (BW-BA-06 trajectory)",
+    "preconditions": "Non-Sensitive archive exists; User and SysAdmin accounts are authenticated",
+    "action_or_input": "User requests restoration -> SysAdmin executes technical restoration",
+    "expected_result": "Request moves Not Requested -> Restoration Requested / Standard Path -> Restored",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-051",
+    "source_id": "CW-BA-03",
+    "purpose": "Verify CW-BA-03 end-to-end composite execution along the approved Sensitive path through approval and execution (BW-BA-07 trajectory)",
+    "preconditions": "Sensitive archive exists; User and SysAdmin accounts are authenticated",
+    "action_or_input": "User requests Sensitive restoration -> SysAdmin approves -> SysAdmin executes technical restoration",
+    "expected_result": "Request moves Not Requested -> Sensitive Restoration Pending Approval -> Approved for Restoration -> Restored",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-052",
+    "source_id": "CW-BA-03",
+    "purpose": "Verify CW-BA-03 end-to-end composite execution along the rejected Sensitive path",
+    "preconditions": "Sensitive archive exists; User and SysAdmin accounts are authenticated",
+    "action_or_input": "User requests Sensitive restoration -> SysAdmin rejects",
+    "expected_result": "Request moves Not Requested -> Sensitive Restoration Pending Approval -> Rejected; no technical restoration occurs",
+    "test_type": "positive"
+  },
+  {
+    "test_id": "TD-053",
+    "source_id": "CW-BA-03",
+    "purpose": "Verify that technical restoration execution cannot occur on a Sensitive restoration request after rejection",
+    "preconditions": "Sensitive restoration request is in Rejected state",
+    "action_or_input": "SysAdmin attempts to execute technical restoration (BA-UC-018) on the rejected request",
+    "expected_result": "BADMS denies execution; request status remains Rejected",
+    "test_type": "negative"
+  }
+]
